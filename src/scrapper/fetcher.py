@@ -41,20 +41,21 @@ def get_movie_info(html):
   genres = selector.css('.tmdb-movie-chapeau li a button::text').getall()
 
   ratings_section = selector.css('.star-rating-section ~ ul.tmdb-movies-stats').get()
-  process_ratings = parsel.Selector(ratings_section).css('li::text').getall()
-  ratings_list = [rating.replace('\n', '').replace('\t', '') for rating in process_ratings if rating.strip()]
+  ratings = { 'rotten_tomatoes': 'N/A', 'imdb': 'N/A' }
+
+  if ratings_section is not None:
+    process_ratings = parsel.Selector(ratings_section).css('li::text').getall()
+    ratings_list = [rating.replace('\n', '').replace('\t', '') for rating in process_ratings if rating.strip()]
+    
+    ratings['rotten_tomatoes'] = ratings_list[0]
+    ratings['imdb'] = ratings_list[1]
   
   parsed_movie_title = re.sub(regex, '', raw_movie_title)
-  ratings = {
-    'rotten_tomatoes': ratings_list[0],
-    'imdb': ratings_list[1]
-  }
-  
   
   movie_info = {
-    'movie_title': parsed_movie_title,
+    'title': parsed_movie_title,
     'tag_line': tag_line,
-    'movie_cover': movie_cover,
+    'cover': movie_cover,
     'summary': summary,
     'ratings': ratings,
     'genres': genres,
