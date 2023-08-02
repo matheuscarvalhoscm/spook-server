@@ -49,6 +49,25 @@ def get_movie_info(html):
     
     ratings['rotten_tomatoes'] = ratings_list[0]
     ratings['imdb'] = ratings_list[1]
+
+  raw_additional_info = selector.css('.tmdb-movie-stats li::text').getall()
+  additional_info = [info.replace('\n', '').replace('\t', '') for info in raw_additional_info if info.strip()]
+
+  raw_additional_info_with_links = selector.css('.tmdb-movie-stats a::text').getall()
+  
+  release_date = None
+  movie_rate, movie_length = None, None
+  
+  if ratings_section is None:
+    parsed_additional_info = re.findall(r':(.*?)(?=\|)', additional_info[1])
+
+    release_date = additional_info[0].replace(' Release Date: ', '')
+    movie_rate, movie_length = parsed_additional_info[0], parsed_additional_info[1]
+  else:
+    parsed_additional_info = re.findall(r':(.*?)(?=\|)', additional_info[3])
+    
+    release_date = additional_info[2].replace(' Release Date: ', '')
+    movie_rate, movie_length  = parsed_additional_info[0], parsed_additional_info[1]
   
   parsed_movie_title = re.sub(regex, '', raw_movie_title)
   
@@ -59,6 +78,10 @@ def get_movie_info(html):
     'summary': summary,
     'ratings': ratings,
     'genres': genres,
+    'release_date': release_date,
+    'movie_rate': movie_rate,
+    'runtime': movie_length,
+    'director': raw_additional_info_with_links
   }
 
   return movie_info
